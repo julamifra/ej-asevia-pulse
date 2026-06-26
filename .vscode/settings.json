@@ -1,0 +1,4 @@
+{
+  "jest.rootPath": "apps/api",
+  "jest.jestCommandLine": "npm run test -w @asevia/api --"
+}

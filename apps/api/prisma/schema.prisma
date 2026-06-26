@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Asesoria {
+  id            Int              @id
+  nombre        String
+  cif           String           @unique
+  provincia     String
+  ciudad        String
+  fechaAlta     DateTime         @map("fecha_alta") @db.Date
+  numEmpleados  Int              @map("num_empleados")
+  especialidad  String
+  metricas      MetricaMensual[]
+
+  @@map("asesorias")
+}
+
+model MetricaMensual {
+  asesoriaId                 Int      @map("asesoria_id")
+  mes                        DateTime @db.Date
+  clientesActivos            Int      @map("clientes_activos")
+  clientesNuevos             Int      @map("clientes_nuevos")
+  clientesBaja               Int      @map("clientes_baja")
+  declaracionesRenta         Int      @map("declaraciones_renta")
+  declaracionesIva           Int      @map("declaraciones_iva")
+  declaracionesSociedades    Int      @map("declaraciones_sociedades")
+  declaracionesOtros         Int      @map("declaraciones_otros")
+  facturacionAsesoriaEur     Decimal  @map("facturacion_asesoria_eur") @db.Decimal(12, 2)
+  facturacionGestionEur      Decimal  @map("facturacion_gestion_eur") @db.Decimal(12, 2)
+  facturacionConsultoriaEur  Decimal  @map("facturacion_consultoria_eur") @db.Decimal(12, 2)
+  horasTrabajadas            Int      @map("horas_trabajadas")
+  consultasRecibidas         Int      @map("consultas_recibidas")
+  consultasResueltas         Int      @map("consultas_resueltas")
+  incidenciasAeat            Int      @map("incidencias_aeat")
+  documentosProcesados       Int      @map("documentos_procesados")
+  satisfaccionCliente        Decimal  @map("satisfaccion_cliente") @db.Decimal(3, 1)
+  asesoria                   Asesoria @relation(fields: [asesoriaId], references: [id], onDelete: Cascade)
+
+  @@id([asesoriaId, mes])
+  @@map("metricas_mensuales")
+}

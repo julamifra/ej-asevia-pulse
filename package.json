@@ -7,6 +7,12 @@
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev -w @asevia/api\" \"npm run dev -w @asevia/web\"",
+    "dev:db": "docker compose up -d postgres",
+    "dev:db:stop": "docker compose stop postgres",
+    "dev:setup": "npm run prisma:migrate -w @asevia/api && npm run prisma:seed -w @asevia/api",
+    "dev:api": "npm run dev -w @asevia/api",
+    "dev:web": "npm run dev -w @asevia/web",
+    "dev:full": "npm run dev:db && npm run dev:setup && npm run dev",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"

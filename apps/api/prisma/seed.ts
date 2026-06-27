@@ -1,17 +1,31 @@
 import { PrismaClient } from "@prisma/client";
 import { config as loadEnv } from "dotenv";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 
 loadEnv({ path: path.resolve(process.cwd(), "../../.env") });
 
-process.env.DATABASE_URL =
-  process.env.DATABASE_URL ??
-  `postgresql://${process.env.POSTGRES_USER ?? "postgres"}:${process.env.POSTGRES_PASSWORD ?? "postgres"}@localhost:${process.env.POSTGRES_PORT ?? "5432"}/${process.env.POSTGRES_DB ?? "asevia_pulse"}?schema=public`;
+if (!process.env.DATABASE_URL?.trim()) {
+  throw new Error("Missing required environment variable: DATABASE_URL");
+}
+
+process.env.DATABASE_URL = process.env.DATABASE_URL.trim();
 
 const prisma = new PrismaClient();
+const workspaceRoot = path.resolve(import.meta.dirname, "../../..");
 
 type CsvRow = Record<string, string>;
+
+const resolveRequiredPath = async (relativePath: string) => {
+  const absolutePath = path.resolve(workspaceRoot, relativePath);
+
+  try {
+    await access(absolutePath);
+    return absolutePath;
+  } catch {
+    throw new Error(`Required file not found: ${absolutePath}`);
+  }
+};
 
 const parseCsv = async (filePath: string) => {
   const content = await readFile(filePath, "utf8");
@@ -35,7 +49,7 @@ const toDate = (value: string) => new Date(`${value}T00:00:00.000Z`);
 const toInt = (value: string) => Number.parseInt(value, 10);
 
 const seedAsesorias = async () => {
-  const asesoriasPath = path.resolve(process.cwd(), "../../data/asesorias_seed.csv");
+  const asesoriasPath = await resolveRequiredPath("data/asesorias_seed.csv");
   const rows = await parseCsv(asesoriasPath);
 
   for (const row of rows) {
@@ -65,7 +79,7 @@ const seedAsesorias = async () => {
 };
 
 const seedMetricas = async () => {
-  const metricasPath = path.resolve(process.cwd(), "../../data/metricas_seed.csv");
+  const metricasPath = await resolveRequiredPath("data/metricas_seed.csv");
   const rows = await parseCsv(metricasPath);
 
   for (const row of rows) {

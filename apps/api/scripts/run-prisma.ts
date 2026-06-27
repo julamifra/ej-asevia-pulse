@@ -4,6 +4,8 @@ import path from "node:path";
 
 loadEnv({ path: path.resolve(process.cwd(), "../../.env") });
 
+const databaseUrl = process.env.DATABASE_URL?.trim();
+
 const args = process.argv.slice(2);
 
 if (args.length === 0) {
@@ -11,9 +13,10 @@ if (args.length === 0) {
   process.exit(1);
 }
 
-const databaseUrl =
-  process.env.DATABASE_URL ??
-  `postgresql://${process.env.POSTGRES_USER ?? "postgres"}:${process.env.POSTGRES_PASSWORD ?? "postgres"}@localhost:${process.env.POSTGRES_PORT ?? "5432"}/${process.env.POSTGRES_DB ?? "asevia_pulse"}?schema=public`;
+if (!databaseUrl) {
+  console.error("Missing required environment variable: DATABASE_URL");
+  process.exit(1);
+}
 
 const child = spawn("npx", ["prisma", ...args], {
   stdio: "inherit",

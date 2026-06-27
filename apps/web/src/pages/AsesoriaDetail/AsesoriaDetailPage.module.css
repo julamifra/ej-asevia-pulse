@@ -1,0 +1,45 @@
+.facts {
+  margin-bottom: 1.5rem;
+}
+
+.latestMonth {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.1);
+  color: #0f766e;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.factCard {
+  height: 100%;
+  padding: 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 50px -36px rgba(15, 23, 42, 0.35);
+}
+
+.factLabel {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.factValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #10243c;
+}
+
+.section {
+  margin-top: 2rem;
+}

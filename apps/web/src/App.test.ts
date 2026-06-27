@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-describe("web scaffold", () => {
-  it("runs tests", () => {
-    expect(true).toBe(true);
+import { buildApiUrl } from "./api/client";
+
+describe("api client", () => {
+  it("builds urls with optional query params", () => {
+    expect(
+      buildApiUrl("/asesorias", {
+        search: "madrid",
+        page: 2,
+        limit: 10,
+        provincia: undefined
+      })
+    ).toBe("http://localhost:3000/api/asesorias?search=madrid&page=2&limit=10");
   });
 });

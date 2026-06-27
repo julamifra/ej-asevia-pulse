@@ -9,7 +9,8 @@ COPY apps/api/package.json ./apps/api/package.json
 RUN npm install
 
 COPY apps/api ./apps/api
+COPY data ./data
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev", "-w", "@asevia/api"]
+CMD ["npm", "run", "start:docker", "-w", "@asevia/api"]

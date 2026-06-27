@@ -5,6 +5,11 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-asevia_pulse}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-asevia_pulse}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -21,7 +26,8 @@ services:
     ports:
       - "${API_PORT:-3000}:3000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   web:
     build:

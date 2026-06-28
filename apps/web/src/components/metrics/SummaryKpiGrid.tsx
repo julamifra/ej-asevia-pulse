@@ -10,7 +10,7 @@ import {
   formatSignedValue,
   getDeltaTone
 } from "../../utils/format";
-import { KpiCard } from "../data-display/KpiCard";
+import { KpiCard } from "../KpiCards/KpiCard";
 import classes from "./SummaryKpiGrid.module.css";
 
 type SummaryKpiGridProps = {

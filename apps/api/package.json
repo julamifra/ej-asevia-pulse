@@ -8,6 +8,7 @@
     "start:docker": "tsx scripts/start-docker.ts",
     "build": "tsc -p tsconfig.json",
     "lint": "eslint \"src/**/*.ts\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest --runInBand",
     "prisma:generate": "tsx scripts/run-prisma.ts generate",
     "prisma:migrate": "tsx scripts/run-prisma.ts migrate dev --name init",

@@ -1,5 +1,5 @@
 import { Badge, Group, Pagination, Paper, Select, Stack, Table, Text, TextInput } from "@mantine/core";
-import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { EmptyState } from "../../components/feedback/EmptyState";
@@ -28,36 +28,42 @@ export function AsesoriasListPage() {
   const provincia = searchParams.get("provincia") ?? "";
   const especialidad = searchParams.get("especialidad") ?? "";
   const page = parsePositiveInt(searchParams.get("page"), 1);
+  const searchParamsKey = searchParams.toString();
 
   const [searchValue, setSearchValue] = useState(search);
-  const deferredSearch = useDeferredValue(searchValue.trim());
 
   useEffect(() => {
-    if (search !== searchValue) {
-      setSearchValue(search);
-    }
-  }, [search, searchValue]);
+    setSearchValue(search);
+  }, [search]);
 
   useEffect(() => {
-    if (deferredSearch === search) {
+    const nextSearch = searchValue.trim();
+
+    if (nextSearch === search) {
       return;
     }
 
-    startTransition(() => {
-      setSearchParams(
-        updateParams(searchParams, (nextParams) => {
-          if (deferredSearch) {
-            nextParams.set("search", deferredSearch);
-          } else {
-            nextParams.delete("search");
-          }
+    const timeoutId = window.setTimeout(() => {
+      const currentParams = new URLSearchParams(searchParamsKey);
 
-          nextParams.set("page", "1");
-        }),
-        { replace: true }
-      );
-    });
-  }, [deferredSearch, search, searchParams, setSearchParams]);
+      startTransition(() => {
+        setSearchParams(
+          updateParams(currentParams, (nextParams) => {
+            if (nextSearch) {
+              nextParams.set("search", nextSearch);
+            } else {
+              nextParams.delete("search");
+            }
+
+            nextParams.set("page", "1");
+          }),
+          { replace: true }
+        );
+      });
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search, searchParamsKey, searchValue, setSearchParams]);
 
   const filtersQuery = useAsesoriaFilters();
   const asesoriasQuery = useAsesorias({

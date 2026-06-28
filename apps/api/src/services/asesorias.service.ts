@@ -1,5 +1,3 @@
-import type { Asesoria } from "@prisma/client";
-
 import { prisma } from "../db/prisma";
 import { AppError } from "../errors/app-error";
 import { buildSummary, mapMetricToDto } from "../lib/metrics";
@@ -30,6 +28,15 @@ type AsesoriaWhere = {
 
 type ProvinciaRow = { provincia: string };
 type EspecialidadRow = { especialidad: string };
+type AsesoriaListRow = {
+  id: number;
+  nombre: string;
+  provincia: string;
+  ciudad: string;
+  numEmpleados: number;
+  especialidad: string;
+  fechaAlta: Date;
+};
 
 const buildWhere = ({ search, provincia, especialidad }: Omit<ListParams, "page" | "limit">): AsesoriaWhere => {
   const where: AsesoriaWhere = {};
@@ -78,7 +85,7 @@ export const listAsesorias = async ({ page, limit, ...filters }: ListParams) => 
   ]);
 
   return {
-    items: items.map((item: Asesoria) => ({
+    items: items.map((item: AsesoriaListRow) => ({
       id: item.id,
       nombre: item.nombre,
       provincia: item.provincia,

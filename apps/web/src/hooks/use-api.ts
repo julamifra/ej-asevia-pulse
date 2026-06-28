@@ -9,7 +9,7 @@ import {
   getNetworkMetrics,
   getNetworkSummary
 } from "../api/endpoints";
-import type { AsesoriaFilters } from "../types/api";
+import type { AsesoriaFilters, SummaryMonthParams } from "../types/api";
 
 export const useNetworkMetrics = () =>
   useQuery({
@@ -50,9 +50,14 @@ export const useAsesoriaMetrics = (id: number, enabled = true) =>
     enabled
   });
 
-export const useAsesoriaSummary = (id: number, enabled = true) =>
+export const useAsesoriaSummary = (
+  id: number,
+  params?: SummaryMonthParams,
+  enabled = true
+) =>
   useQuery({
-    queryKey: ["asesoria-summary", id],
-    queryFn: () => getAsesoriaSummary(id),
-    enabled
+    queryKey: ["asesoria-summary", id, params],
+    queryFn: () => getAsesoriaSummary(id, params),
+    enabled,
+    placeholderData: keepPreviousData
   });

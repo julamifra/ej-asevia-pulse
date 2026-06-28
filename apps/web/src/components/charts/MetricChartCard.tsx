@@ -23,9 +23,13 @@ type MetricChartCardProps<T extends Record<string, number | string>> = {
     key: keyof T;
     color: string;
     label: string;
+    yAxisId?: "left" | "right";
+    valueFormatter?: (value: number) => string;
+    strokeWidth?: number;
   }>;
   valueFormatter: (value: number) => string;
   axisFormatter?: (value: number) => string;
+  rightAxisFormatter?: (value: number) => string;
 };
 
 export function MetricChartCard<T extends Record<string, number | string>>({
@@ -36,7 +40,8 @@ export function MetricChartCard<T extends Record<string, number | string>>({
   color,
   series,
   valueFormatter,
-  axisFormatter
+  axisFormatter,
+  rightAxisFormatter
 }: MetricChartCardProps<T>) {
   const chartSeries =
     series ??
@@ -45,10 +50,13 @@ export function MetricChartCard<T extends Record<string, number | string>>({
           {
             key: dataKey,
             color,
-            label: String(dataKey)
+            label: String(dataKey),
+            yAxisId: "left" as const
           }
         ]
       : []);
+  const hasRightAxis = chartSeries.some((item) => item.yAxisId === "right");
+  const seriesByKey = new Map(chartSeries.map((item) => [String(item.key), item]));
 
   return (
     <Paper className={classes.card}>
@@ -67,6 +75,7 @@ export function MetricChartCard<T extends Record<string, number | string>>({
               tickLine={false}
             />
             <YAxis
+              yAxisId="left"
               tickFormatter={(value) =>
                 axisFormatter ? axisFormatter(Number(value)) : valueFormatter(Number(value))
               }
@@ -75,13 +84,32 @@ export function MetricChartCard<T extends Record<string, number | string>>({
               tickLine={false}
               width={72}
             />
+            {hasRightAxis ? (
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                tickFormatter={(value) =>
+                  rightAxisFormatter
+                    ? rightAxisFormatter(Number(value))
+                    : valueFormatter(Number(value))
+                }
+                tick={{ fill: "#64748b", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+                width={64}
+              />
+            ) : null}
             <Tooltip
               contentStyle={{ borderRadius: 12, borderColor: "#cbd5e1" }}
               labelFormatter={(label) => formatMonthLabel(String(label))}
-              formatter={(value, _name, item) => [
-                valueFormatter(Number(value)),
-                item.name
-              ]}
+              formatter={(value, _name, item) => {
+                const seriesItem = seriesByKey.get(String(item.dataKey));
+
+                return [
+                  (seriesItem?.valueFormatter ?? valueFormatter)(Number(value)),
+                  item.name
+                ];
+              }}
             />
             {chartSeries.length > 1 ? <Legend /> : null}
             {chartSeries.map((item) => (
@@ -90,8 +118,9 @@ export function MetricChartCard<T extends Record<string, number | string>>({
                 type="monotone"
                 dataKey={String(item.key)}
                 name={item.label}
+                yAxisId={item.yAxisId ?? "left"}
                 stroke={item.color}
-                strokeWidth={3}
+                strokeWidth={item.strokeWidth ?? 3}
                 dot={false}
                 activeDot={{ r: 6 }}
               />

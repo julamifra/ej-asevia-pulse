@@ -7,7 +7,8 @@ import type {
   AsesoriaMetricsResponse,
   AsesoriaSummaryResponse,
   NetworkMetricsResponse,
-  NetworkSummaryResponse
+  NetworkSummaryResponse,
+  SummaryMonthParams
 } from "../types/api";
 
 export const getNetworkMetrics = () => fetchJson<NetworkMetricsResponse>("/network/metrics");
@@ -25,5 +26,5 @@ export const getAsesoriaDetail = (id: number) =>
 export const getAsesoriaMetrics = (id: number) =>
   fetchJson<AsesoriaMetricsResponse>(`/asesorias/${id}/metrics`);
 
-export const getAsesoriaSummary = (id: number) =>
-  fetchJson<AsesoriaSummaryResponse>(`/asesorias/${id}/summary`);
+export const getAsesoriaSummary = (id: number, params?: SummaryMonthParams) =>
+  fetchJson<AsesoriaSummaryResponse>(`/asesorias/${id}/summary`, params);

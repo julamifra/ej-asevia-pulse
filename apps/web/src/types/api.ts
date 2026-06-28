@@ -42,8 +42,17 @@ export type MetricPoint = {
   clientesNuevos: number;
   clientesBaja: number;
   clientesNetos: number;
+  facturacionAsesoriaEur: number;
+  facturacionGestionEur: number;
+  facturacionConsultoriaEur: number;
   facturacionTotal: number;
+  declaracionesRenta: number;
+  declaracionesIva: number;
+  declaracionesSociedades: number;
+  declaracionesOtros: number;
   totalDeclaraciones: number;
+  consultasRecibidas: number;
+  consultasResueltas: number;
   tasaResolucion: number;
   satisfaccionCliente: number;
 };
@@ -75,6 +84,7 @@ export type SummaryComparison = {
 export type AsesoriaSummaryResponse = {
   asesoriaId: number;
   latestMonth: string | null;
+  selectedMonth: string | null;
   current: SummaryCurrent | null;
   comparison: SummaryComparison | null;
 };
@@ -85,8 +95,14 @@ export type NetworkMetricsResponse = {
 
 export type NetworkSummaryResponse = {
   latestMonth: string | null;
+  selectedMonth: string | null;
   current: SummaryCurrent | null;
   comparison: SummaryComparison | null;
+};
+
+export type SummaryMonthParams = {
+  year: number;
+  month: number;
 };
 
 export type AsesoriaFilters = {

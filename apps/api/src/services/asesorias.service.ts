@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { Asesoria } from "@prisma/client";
 
 import { prisma } from "../db/prisma";
 import { AppError } from "../errors/app-error";
@@ -18,8 +18,21 @@ type SummaryMonthParams = {
   selectedMonth: string;
 };
 
-const buildWhere = ({ search, provincia, especialidad }: Omit<ListParams, "page" | "limit">): Prisma.AsesoriaWhereInput => {
-  const where: Prisma.AsesoriaWhereInput = {};
+type AsesoriaWhere = {
+  OR?: Array<
+    | { nombre: { contains: string; mode: "insensitive" } }
+    | { ciudad: { contains: string; mode: "insensitive" } }
+    | { cif: { contains: string; mode: "insensitive" } }
+  >;
+  provincia?: string;
+  especialidad?: string;
+};
+
+type ProvinciaRow = { provincia: string };
+type EspecialidadRow = { especialidad: string };
+
+const buildWhere = ({ search, provincia, especialidad }: Omit<ListParams, "page" | "limit">): AsesoriaWhere => {
+  const where: AsesoriaWhere = {};
 
   if (search) {
     where.OR = [
@@ -65,7 +78,7 @@ export const listAsesorias = async ({ page, limit, ...filters }: ListParams) => 
   ]);
 
   return {
-    items: items.map((item) => ({
+    items: items.map((item: Asesoria) => ({
       id: item.id,
       nombre: item.nombre,
       provincia: item.provincia,
@@ -98,8 +111,8 @@ export const getAsesoriaFilters = async () => {
   ]);
 
   return {
-    provincias: provincias.map((item) => item.provincia),
-    especialidades: especialidades.map((item) => item.especialidad)
+    provincias: provincias.map((item: ProvinciaRow) => item.provincia),
+    especialidades: especialidades.map((item: EspecialidadRow) => item.especialidad)
   };
 };
 

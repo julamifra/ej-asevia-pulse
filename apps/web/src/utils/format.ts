@@ -52,3 +52,15 @@ export const parsePositiveInt = (value: string | null, fallback: number) => {
   const parsed = Number.parseInt(value ?? "", 10);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 };
+
+export const getDeltaTone = (value: number) => {
+  if (value > 0) {
+    return "positive" as const;
+  }
+
+  if (value < 0) {
+    return "negative" as const;
+  }
+
+  return "neutral" as const;
+};

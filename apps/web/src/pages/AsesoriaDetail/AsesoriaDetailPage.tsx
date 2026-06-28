@@ -1,13 +1,14 @@
-import { Anchor, Badge, Button, Group, Paper, Select, SimpleGrid, Stack, Text } from "@mantine/core";
-import { useEffect, useMemo, useState } from "react";
+import { Anchor, Badge, Group, Paper, SimpleGrid, Stack, Text } from "@mantine/core";
 import { Link, useParams } from "react-router-dom";
 
 import { MetricChartCard } from "../../components/charts/MetricChartCard";
-import { KpiCard } from "../../components/data-display/KpiCard";
 import { EmptyState } from "../../components/feedback/EmptyState";
 import { ErrorState } from "../../components/feedback/ErrorState";
 import { LoadingState } from "../../components/feedback/LoadingState";
 import { PageHeader } from "../../components/layout/PageHeader";
+import { MetricMonthSelector } from "../../components/metrics/MetricMonthSelector";
+import { SummaryKpiGrid } from "../../components/metrics/SummaryKpiGrid";
+import { useMetricMonthSelection } from "../../hooks/useMetricMonthSelection";
 import {
   useAsesoriaDetail,
   useAsesoriaMetrics,
@@ -19,96 +20,40 @@ import {
   formatCurrency,
   formatMonthLabel,
   formatNumber,
-  formatPercent,
-  formatSignedPercent,
-  formatSignedValue
+  formatPercent
 } from "../../utils/format";
 import type { MetricPoint } from "../../types/api";
 import classes from "./AsesoriaDetailPage.module.css";
 
 const emptyMetrics: MetricPoint[] = [];
 
-const getDeltaTone = (value: number) => {
-  if (value > 0) {
-    return "positive" as const;
-  }
-
-  if (value < 0) {
-    return "negative" as const;
-  }
-
-  return "neutral" as const;
-};
-
-const months = [
-  { value: 1, label: "Ene" },
-  { value: 2, label: "Feb" },
-  { value: 3, label: "Mar" },
-  { value: 4, label: "Abr" },
-  { value: 5, label: "May" },
-  { value: 6, label: "Jun" },
-  { value: 7, label: "Jul" },
-  { value: 8, label: "Ago" },
-  { value: 9, label: "Sep" },
-  { value: 10, label: "Oct" },
-  { value: 11, label: "Nov" },
-  { value: 12, label: "Dic" }
-];
-
 export function AsesoriaDetailPage() {
   const params = useParams();
   const id = Number.parseInt(params.id ?? "", 10);
   const isValidId = Number.isInteger(id) && id > 0;
-  const [selectedYear, setSelectedYear] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
 
   const detailQuery = useAsesoriaDetail(id, isValidId);
   const metricsQuery = useAsesoriaMetrics(id, isValidId);
   const metrics = metricsQuery.data?.items ?? emptyMetrics;
-  const availableMonthsByYear = useMemo(() => {
-    const result = new Map<string, Set<number>>();
-
-    for (const item of metrics) {
-      const year = item.mes.slice(0, 4);
-      const month = Number.parseInt(item.mes.slice(5, 7), 10);
-      const existing = result.get(year) ?? new Set<number>();
-      existing.add(month);
-      result.set(year, existing);
-    }
-
-    return result;
-  }, [metrics]);
-
-  const yearOptions = useMemo(
-    () => [...availableMonthsByYear.keys()].sort().map((year) => ({ value: year, label: year })),
-    [availableMonthsByYear]
-  );
-
-  useEffect(() => {
-    if (metrics.length === 0) {
-      return;
-    }
-
-    const latest = metrics[metrics.length - 1];
-    const latestYear = latest.mes.slice(0, 4);
-    const latestMonth = Number.parseInt(latest.mes.slice(5, 7), 10);
-    const selectedYearMonths = selectedYear ? availableMonthsByYear.get(selectedYear) : undefined;
-
-    if (!selectedYear || !selectedMonth || !selectedYearMonths?.has(selectedMonth)) {
-      setSelectedYear(latestYear);
-      setSelectedMonth(latestMonth);
-    }
-  }, [availableMonthsByYear, metrics, selectedMonth, selectedYear]);
-
-  const hasSelectedMonth = selectedYear !== null && selectedMonth !== null;
-  const summaryQuery = useAsesoriaSummary(
-    id,
-    hasSelectedMonth
+  const {
+    availableMonthsByYear,
+    hasSelectedMonth,
+    handleYearChange,
+    selectedMonth,
+    selectedYear,
+    setSelectedMonth,
+    yearOptions
+  } = useMetricMonthSelection(metrics);
+  const summaryMonthParams =
+    selectedYear !== null && selectedMonth !== null
       ? {
           year: Number(selectedYear),
           month: selectedMonth
         }
-      : undefined,
+      : undefined;
+  const summaryQuery = useAsesoriaSummary(
+    id,
+    summaryMonthParams,
     isValidId && hasSelectedMonth
   );
 
@@ -209,122 +154,25 @@ export function AsesoriaDetailPage() {
         </div>
       ) : null}
 
-      <Stack gap="sm" className={classes.monthSelector}>
-        <Select
-          label="Año"
-          data={yearOptions}
-          value={selectedYear}
-          onChange={(value) => {
-            if (!value) {
-              return;
-            }
+      <MetricMonthSelector
+        availableMonthsByYear={availableMonthsByYear}
+        onMonthChange={setSelectedMonth}
+        onYearChange={handleYearChange}
+        selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
+        yearOptions={yearOptions}
+      />
 
-            setSelectedYear(value);
-            const firstAvailableMonth = Math.max(...(availableMonthsByYear.get(value) ?? new Set<number>()));
-            setSelectedMonth(Number.isFinite(firstAvailableMonth) ? firstAvailableMonth : null);
-          }}
-          w={180}
-        />
-
-        <div className={classes.monthButtons}>
-          {months.map((month) => {
-            const isAvailable = selectedYear
-              ? availableMonthsByYear.get(selectedYear)?.has(month.value) ?? false
-              : false;
-
-            return (
-              <Button
-                key={month.value}
-                size="xs"
-                variant={selectedMonth === month.value ? "filled" : "light"}
-                color={selectedMonth === month.value ? "teal" : "gray"}
-                disabled={!isAvailable}
-                onClick={() => setSelectedMonth(month.value)}
-              >
-                {month.label}
-              </Button>
-            );
-          })}
-        </div>
-      </Stack>
-
-      <SimpleGrid
-        cols={{ base: 1, sm: 2, lg: 3 }}
-        className={`${classes.summaryArea} ${isSummaryUpdating ? classes.summaryAreaUpdating : ""}`.trim()}
-      >
-        <KpiCard
-          label="Clientes activos"
-          value={formatNumber(summary.current.clientesActivos)}
-          hint="Clientes activos gestionados durante el ultimo mes disponible"
-          delta={
-            comparison
-              ? {
-                  value: formatSignedValue(comparison.clientesActivosDelta, formatNumber),
-                  label: `vs ${formatMonthLabel(comparison.againstMonth)}`,
-                  tone: getDeltaTone(comparison.clientesActivosDelta)
-                }
-              : null
-          }
-        />
-        <KpiCard
-          label="Facturacion total"
-          value={formatCurrency(summary.current.facturacionTotal)}
-          hint="Suma mensual de asesoria, gestion y consultoria"
-          delta={
-            comparison
-              ? {
-                  value: formatSignedValue(comparison.facturacionTotalDelta, formatCurrency),
-                  label: `vs ${formatMonthLabel(comparison.againstMonth)}`,
-                  tone: getDeltaTone(comparison.facturacionTotalDelta)
-                }
-              : null
-          }
-        />
-        <KpiCard
-          label="Total declaraciones"
-          value={formatNumber(summary.current.totalDeclaraciones)}
-          hint="Suma mensual de declaracion IRPF, IVA, Impuesto Sociedades y otras."
-          delta={
-            comparison
-              ? {
-                  value: formatSignedValue(comparison.totalDeclaracionesDelta, formatNumber),
-                  label: `vs ${formatMonthLabel(comparison.againstMonth)}`,
-                  tone: getDeltaTone(comparison.totalDeclaracionesDelta)
-                }
-              : null
-          }
-        />
-        <KpiCard
-          label="Tasa de resolucion"
-          value={formatPercent(summary.current.tasaResolucion)}
-          hint="Consultas resueltas sobre consultas recibidas"
-          delta={
-            comparison
-              ? {
-                  value: formatSignedPercent(comparison.tasaResolucionDelta),
-                  label: `vs ${formatMonthLabel(comparison.againstMonth)}`,
-                  tone: getDeltaTone(comparison.tasaResolucionDelta)
-                }
-              : null
-          }
-        />
-        <KpiCard
-          label="Satisfaccion"
-          value={summary.current.satisfaccionCliente.toFixed(1)}
-          hint="Valoracion media mensual de clientes"
-          delta={
-            comparison
-              ? {
-                  value: formatSignedValue(comparison.satisfaccionClienteDelta, (value) =>
-                    value.toFixed(1)
-                  ),
-                  label: `vs ${formatMonthLabel(comparison.againstMonth)}`,
-                  tone: getDeltaTone(comparison.satisfaccionClienteDelta)
-                }
-              : null
-          }
-        />
-      </SimpleGrid>
+      <SummaryKpiGrid
+        comparison={comparison}
+        current={summary.current}
+        hints={{
+          clientesActivos: "Clientes activos gestionados durante el ultimo mes disponible",
+          facturacionTotal: "Suma mensual de asesoria, gestion y consultoria",
+          satisfaccion: "Valoracion media mensual de clientes"
+        }}
+        isUpdating={isSummaryUpdating}
+      />
 
       <SimpleGrid cols={{ base: 1, xl: 2 }} className={classes.section}>
         <MetricChartCard

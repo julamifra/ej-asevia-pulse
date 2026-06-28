@@ -15,29 +15,6 @@
   font-weight: 700;
 }
 
-.monthSelector {
-  margin-bottom: 1.25rem;
-  padding: 1rem;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  box-shadow: 0 18px 50px -36px rgba(15, 23, 42, 0.35);
-}
-
-.monthButtons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.summaryArea {
-  transition: opacity 0.18s ease;
-}
-
-.summaryAreaUpdating {
-  opacity: 0.62;
-}
-
 .factCard {
   height: 100%;
   padding: 1.1rem;

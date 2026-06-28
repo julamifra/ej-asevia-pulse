@@ -1,0 +1,7 @@
+.root {
+  transition: opacity 0.18s ease;
+}
+
+.updating {
+  opacity: 0.62;
+}

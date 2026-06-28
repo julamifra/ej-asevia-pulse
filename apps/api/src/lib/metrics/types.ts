@@ -23,15 +23,36 @@ export type MetricDto = {
   clientesNuevos: number;
   clientesBaja: number;
   clientesNetos: number;
+  facturacionAsesoriaEur: number;
+  facturacionGestionEur: number;
+  facturacionConsultoriaEur: number;
+  facturacionTotal: number;
+  declaracionesRenta: number;
+  declaracionesIva: number;
+  declaracionesSociedades: number;
+  declaracionesOtros: number;
+  totalDeclaraciones: number;
+  consultasRecibidas: number;
+  consultasResueltas: number;
+  tasaResolucion: number;
+  satisfaccionCliente: number;
+};
+
+export type SummaryCurrentDto = {
+  clientesActivos: number;
+  clientesNetos: number;
   facturacionTotal: number;
   totalDeclaraciones: number;
   tasaResolucion: number;
   satisfaccionCliente: number;
 };
 
+export type SummaryMetricLike = Pick<MetricDto, "mes" | keyof SummaryCurrentDto>;
+
 export type SummaryDto = {
   latestMonth: string;
-  current: Omit<MetricDto, "mes" | "clientesNuevos" | "clientesBaja">;
+  selectedMonth: string;
+  current: SummaryCurrentDto;
   comparison: {
     againstMonth: string;
     clientesActivosDelta: number;

@@ -12,6 +12,12 @@ type ListParams = {
   limit: number;
 };
 
+type SummaryMonthParams = {
+  year: number;
+  month: number;
+  selectedMonth: string;
+};
+
 const buildWhere = ({ search, provincia, especialidad }: Omit<ListParams, "page" | "limit">): Prisma.AsesoriaWhereInput => {
   const where: Prisma.AsesoriaWhereInput = {};
 
@@ -126,14 +132,19 @@ export const getAsesoriaMetrics = async (id: number) => {
   };
 };
 
-export const getAsesoriaSummary = async (id: number) => {
+export const getAsesoriaSummary = async (id: number, selectedMonth?: SummaryMonthParams) => {
   const metrics = await getAsesoriaMetrics(id);
-  const summary = buildSummary(metrics.items);
+  const summary = buildSummary(metrics.items, selectedMonth?.selectedMonth);
+
+  if (selectedMonth && !summary) {
+    throw new AppError(404, "NOT_FOUND", "Metrics not found for selected month");
+  }
 
   return {
     asesoriaId: id,
     ...(summary ?? {
       latestMonth: null,
+      selectedMonth: null,
       current: null,
       comparison: null
     })

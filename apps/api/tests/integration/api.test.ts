@@ -131,6 +131,7 @@ describe("API REST", () => {
     expect(response.body).toEqual({
       asesoriaId: 1,
       latestMonth: "2026-03-01",
+      selectedMonth: "2026-03-01",
       current: {
         clientesActivos: 271,
         clientesNetos: 7,
@@ -147,6 +148,121 @@ describe("API REST", () => {
         totalDeclaracionesDelta: 14,
         tasaResolucionDelta: 0,
         satisfaccionClienteDelta: 0.3
+      }
+    });
+  });
+
+  it("returns asesoria summary for selected year and month", async () => {
+    prismaMock.asesoria.findUnique.mockResolvedValue({ id: 1 });
+    prismaMock.metricaMensual.findMany.mockResolvedValue([
+      {
+        asesoriaId: 1,
+        mes: new Date("2025-09-01T00:00:00.000Z"),
+        clientesActivos: 240,
+        clientesNuevos: 8,
+        clientesBaja: 3,
+        declaracionesRenta: 10,
+        declaracionesIva: 100,
+        declaracionesSociedades: 8,
+        declaracionesOtros: 6,
+        facturacionAsesoriaEur: 15000,
+        facturacionGestionEur: 5000,
+        facturacionConsultoriaEur: 4000,
+        consultasRecibidas: 120,
+        consultasResueltas: 108,
+        satisfaccionCliente: 4.2
+      },
+      {
+        asesoriaId: 1,
+        mes: new Date("2026-03-01T00:00:00.000Z"),
+        clientesActivos: 271,
+        clientesNuevos: 11,
+        clientesBaja: 4,
+        declaracionesRenta: 12,
+        declaracionesIva: 110,
+        declaracionesSociedades: 9,
+        declaracionesOtros: 7,
+        facturacionAsesoriaEur: 17000,
+        facturacionGestionEur: 6000,
+        facturacionConsultoriaEur: 5000,
+        consultasRecibidas: 130,
+        consultasResueltas: 117,
+        satisfaccionCliente: 4.5
+      }
+    ]);
+
+    const response = await request(createApp()).get("/api/asesorias/1/summary?year=2025&month=9");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      asesoriaId: 1,
+      latestMonth: "2026-03-01",
+      selectedMonth: "2025-09-01",
+      current: {
+        clientesActivos: 240,
+        clientesNetos: 5,
+        facturacionTotal: 24000,
+        totalDeclaraciones: 124,
+        tasaResolucion: 0.9,
+        satisfaccionCliente: 4.2
+      },
+      comparison: null
+    });
+  });
+
+  it("returns 400 when summary year and month are not provided together", async () => {
+    const response = await request(createApp()).get("/api/asesorias/1/summary?year=2026");
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: {
+        code: "BAD_REQUEST",
+        message: "year and month parameters must be provided together"
+      }
+    });
+  });
+
+  it("returns 400 when summary month is invalid", async () => {
+    const response = await request(createApp()).get("/api/asesorias/1/summary?year=2026&month=13");
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: {
+        code: "BAD_REQUEST",
+        message: "Invalid month parameter"
+      }
+    });
+  });
+
+  it("returns 404 when selected summary month has no metrics", async () => {
+    prismaMock.asesoria.findUnique.mockResolvedValue({ id: 1 });
+    prismaMock.metricaMensual.findMany.mockResolvedValue([
+      {
+        asesoriaId: 1,
+        mes: new Date("2026-03-01T00:00:00.000Z"),
+        clientesActivos: 271,
+        clientesNuevos: 11,
+        clientesBaja: 4,
+        declaracionesRenta: 12,
+        declaracionesIva: 110,
+        declaracionesSociedades: 9,
+        declaracionesOtros: 7,
+        facturacionAsesoriaEur: 17000,
+        facturacionGestionEur: 6000,
+        facturacionConsultoriaEur: 5000,
+        consultasRecibidas: 130,
+        consultasResueltas: 117,
+        satisfaccionCliente: 4.5
+      }
+    ]);
+
+    const response = await request(createApp()).get("/api/asesorias/1/summary?year=2025&month=9");
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({
+      error: {
+        code: "NOT_FOUND",
+        message: "Metrics not found for selected month"
       }
     });
   });
@@ -228,6 +344,7 @@ describe("API REST", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       latestMonth: "2026-03-01",
+      selectedMonth: "2026-03-01",
       current: {
         clientesActivos: 195,
         clientesNetos: 5,

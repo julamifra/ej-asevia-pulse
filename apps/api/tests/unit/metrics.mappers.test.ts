@@ -27,8 +27,17 @@ describe("metrics mappers", () => {
         clientesNuevos: 8,
         clientesBaja: 3,
         clientesNetos: 5,
+        facturacionAsesoriaEur: 18209.84,
+        facturacionGestionEur: 6561.88,
+        facturacionConsultoriaEur: 7556.03,
         facturacionTotal: 32327.75,
+        declaracionesRenta: 31,
+        declaracionesIva: 115,
+        declaracionesSociedades: 10,
+        declaracionesOtros: 17,
         totalDeclaraciones: 173,
+        consultasRecibidas: 122,
+        consultasResueltas: 104,
         tasaResolucion: 0.8525,
         satisfaccionCliente: 4.5
       });
@@ -68,6 +77,7 @@ describe("metrics mappers", () => {
 
       expect(buildSummary(items)).toEqual({
         latestMonth: "2026-03-01",
+        selectedMonth: "2026-03-01",
         current: {
           clientesActivos: 271,
           clientesNetos: -2,
@@ -116,6 +126,7 @@ describe("metrics mappers", () => {
 
       expect(buildSummary(items)).toEqual({
         latestMonth: "2026-03-01",
+        selectedMonth: "2026-03-01",
         current: {
           clientesActivos: 271,
           clientesNetos: -2,
@@ -123,6 +134,47 @@ describe("metrics mappers", () => {
           totalDeclaraciones: 137,
           tasaResolucion: 0.8848,
           satisfaccionCliente: 3.4
+        },
+        comparison: null
+      });
+    });
+
+    it("builds the summary from a selected month", () => {
+      const items = [
+        {
+          mes: "2025-09-01",
+          clientesActivos: 246,
+          clientesNuevos: 10,
+          clientesBaja: 3,
+          clientesNetos: 7,
+          facturacionTotal: 32946.94,
+          totalDeclaraciones: 144,
+          tasaResolucion: 0.903,
+          satisfaccionCliente: 5
+        },
+        {
+          mes: "2026-03-01",
+          clientesActivos: 271,
+          clientesNuevos: 7,
+          clientesBaja: 9,
+          clientesNetos: -2,
+          facturacionTotal: 40586.81,
+          totalDeclaraciones: 137,
+          tasaResolucion: 0.8848,
+          satisfaccionCliente: 3.4
+        }
+      ];
+
+      expect(buildSummary(items, "2025-09-01")).toEqual({
+        latestMonth: "2026-03-01",
+        selectedMonth: "2025-09-01",
+        current: {
+          clientesActivos: 246,
+          clientesNetos: 7,
+          facturacionTotal: 32946.94,
+          totalDeclaraciones: 144,
+          tasaResolucion: 0.903,
+          satisfaccionCliente: 5
         },
         comparison: null
       });

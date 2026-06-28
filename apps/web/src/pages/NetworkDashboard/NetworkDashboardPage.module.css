@@ -2,6 +2,42 @@
   margin-top: 1.5rem;
 }
 
+.latestMonth {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.1);
+  color: #0f766e;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.monthSelector {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 18px 50px -36px rgba(15, 23, 42, 0.35);
+}
+
+.monthButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.summaryArea {
+  transition: opacity 0.18s ease;
+}
+
+.summaryAreaUpdating {
+  opacity: 0.62;
+}
+
 .section {
   margin-top: 2rem;
 }

@@ -13,7 +13,8 @@ import type {
 
 export const getNetworkMetrics = () => fetchJson<NetworkMetricsResponse>("/network/metrics");
 
-export const getNetworkSummary = () => fetchJson<NetworkSummaryResponse>("/network/summary");
+export const getNetworkSummary = (params?: SummaryMonthParams) =>
+  fetchJson<NetworkSummaryResponse>("/network/summary", params);
 
 export const getAsesorias = (filters: AsesoriaFilters) =>
   fetchJson<AsesoriaListResponse>("/asesorias", filters);

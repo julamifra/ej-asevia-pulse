@@ -17,10 +17,12 @@ export const useNetworkMetrics = () =>
     queryFn: getNetworkMetrics
   });
 
-export const useNetworkSummary = () =>
+export const useNetworkSummary = (params?: SummaryMonthParams, enabled = true) =>
   useQuery({
-    queryKey: ["network-summary"],
-    queryFn: getNetworkSummary
+    queryKey: ["network-summary", params],
+    queryFn: () => getNetworkSummary(params),
+    enabled,
+    placeholderData: keepPreviousData
   });
 
 export const useAsesorias = (filters: AsesoriaFilters) =>

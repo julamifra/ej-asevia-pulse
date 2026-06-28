@@ -364,5 +364,139 @@ describe("API REST", () => {
       }
     });
   });
+
+  it("returns aggregated network summary for selected year and month", async () => {
+    prismaMock.metricaMensual.findMany.mockResolvedValue([
+      {
+        asesoriaId: 1,
+        mes: new Date("2025-09-01T00:00:00.000Z"),
+        clientesActivos: 100,
+        clientesNuevos: 4,
+        clientesBaja: 2,
+        declaracionesRenta: 10,
+        declaracionesIva: 20,
+        declaracionesSociedades: 3,
+        declaracionesOtros: 2,
+        facturacionAsesoriaEur: 1000,
+        facturacionGestionEur: 500,
+        facturacionConsultoriaEur: 300,
+        consultasRecibidas: 50,
+        consultasResueltas: 40,
+        satisfaccionCliente: 4
+      },
+      {
+        asesoriaId: 2,
+        mes: new Date("2025-09-01T00:00:00.000Z"),
+        clientesActivos: 80,
+        clientesNuevos: 3,
+        clientesBaja: 1,
+        declaracionesRenta: 5,
+        declaracionesIva: 15,
+        declaracionesSociedades: 2,
+        declaracionesOtros: 1,
+        facturacionAsesoriaEur: 900,
+        facturacionGestionEur: 400,
+        facturacionConsultoriaEur: 200,
+        consultasRecibidas: 25,
+        consultasResueltas: 20,
+        satisfaccionCliente: 5
+      },
+      {
+        asesoriaId: 1,
+        mes: new Date("2026-03-01T00:00:00.000Z"),
+        clientesActivos: 110,
+        clientesNuevos: 6,
+        clientesBaja: 2,
+        declaracionesRenta: 15,
+        declaracionesIva: 22,
+        declaracionesSociedades: 4,
+        declaracionesOtros: 2,
+        facturacionAsesoriaEur: 1300,
+        facturacionGestionEur: 600,
+        facturacionConsultoriaEur: 400,
+        consultasRecibidas: 55,
+        consultasResueltas: 50,
+        satisfaccionCliente: 4.2
+      },
+      {
+        asesoriaId: 2,
+        mes: new Date("2026-03-01T00:00:00.000Z"),
+        clientesActivos: 85,
+        clientesNuevos: 2,
+        clientesBaja: 1,
+        declaracionesRenta: 8,
+        declaracionesIva: 18,
+        declaracionesSociedades: 3,
+        declaracionesOtros: 1,
+        facturacionAsesoriaEur: 950,
+        facturacionGestionEur: 420,
+        facturacionConsultoriaEur: 250,
+        consultasRecibidas: 30,
+        consultasResueltas: 24,
+        satisfaccionCliente: 4.8
+      }
+    ]);
+
+    const response = await request(createApp()).get("/api/network/summary?year=2025&month=9");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      latestMonth: "2026-03-01",
+      selectedMonth: "2025-09-01",
+      current: {
+        clientesActivos: 180,
+        clientesNetos: 4,
+        facturacionTotal: 3300,
+        totalDeclaraciones: 58,
+        tasaResolucion: 0.8,
+        satisfaccionCliente: 4.5
+      },
+      comparison: null
+    });
+  });
+
+  it("returns 400 when network summary year and month are not provided together", async () => {
+    const response = await request(createApp()).get("/api/network/summary?month=3");
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: {
+        code: "BAD_REQUEST",
+        message: "year and month parameters must be provided together"
+      }
+    });
+  });
+
+  it("returns 404 when selected network summary month has no metrics", async () => {
+    prismaMock.metricaMensual.findMany.mockResolvedValue([
+      {
+        asesoriaId: 1,
+        mes: new Date("2026-03-01T00:00:00.000Z"),
+        clientesActivos: 110,
+        clientesNuevos: 6,
+        clientesBaja: 2,
+        declaracionesRenta: 15,
+        declaracionesIva: 22,
+        declaracionesSociedades: 4,
+        declaracionesOtros: 2,
+        facturacionAsesoriaEur: 1300,
+        facturacionGestionEur: 600,
+        facturacionConsultoriaEur: 400,
+        consultasRecibidas: 55,
+        consultasResueltas: 50,
+        satisfaccionCliente: 4.2
+      }
+    ]);
+
+    const response = await request(createApp()).get("/api/network/summary?year=2025&month=9");
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({
+      error: {
+        code: "NOT_FOUND",
+        message: "Metrics not found for selected month"
+      }
+    });
+  });
 });
  

@@ -1,4 +1,5 @@
 import { prisma } from "../db/prisma";
+import { AppError } from "../errors/app-error";
 import {
   buildSummary,
   calculateFacturacionTotal,
@@ -9,6 +10,12 @@ import {
   round,
   type MetricDto
 } from "../lib/metrics";
+
+type SummaryMonthParams = {
+  year: number;
+  month: number;
+  selectedMonth: string;
+};
 
 type AggregateBucket = {
   mes: Date;
@@ -107,11 +114,16 @@ export const getNetworkMetrics = async () => {
   };
 };
 
-export const getNetworkSummary = async () => {
+export const getNetworkSummary = async (selectedMonth?: SummaryMonthParams) => {
   const items = await aggregateMetricsByMonth();
+  const summary = buildSummary(items, selectedMonth?.selectedMonth);
+
+  if (selectedMonth && !summary) {
+    throw new AppError(404, "NOT_FOUND", "Metrics not found for selected month");
+  }
 
   return (
-    buildSummary(items) ?? {
+    summary ?? {
       latestMonth: null,
       selectedMonth: null,
       current: null,

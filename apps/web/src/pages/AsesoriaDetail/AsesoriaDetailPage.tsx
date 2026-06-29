@@ -1,4 +1,4 @@
-import { Anchor, Badge, Group, Paper, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Anchor, Badge, Group, Paper, SimpleGrid, Stack, Tabs, Text } from "@mantine/core";
 import { Link, useParams } from "react-router-dom";
 
 import { MetricChartCard } from "../../components/charts/MetricChartCard";
@@ -23,6 +23,7 @@ import {
   formatPercent
 } from "../../utils/format";
 import type { MetricPoint } from "../../types/api";
+import { SupportAssistedPanel } from "./SupportAssistedPanel";
 import classes from "./AsesoriaDetailPage.module.css";
 
 const emptyMetrics: MetricPoint[] = [];
@@ -174,142 +175,155 @@ export function AsesoriaDetailPage() {
         isUpdating={isSummaryUpdating}
       />
 
-      <SimpleGrid cols={{ base: 1, xl: 2 }} className={classes.section}>
-        <MetricChartCard
-          title="Clientes activos"
-          description="Evolucion mensual de los clientes activos gestionados por esta asesoria."
-          data={metrics}
-          dataKey="clientesActivos"
-          color="#0f766e"
-          valueFormatter={formatNumber}
-          axisFormatter={formatCompactNumber}
-        />
-        <MetricChartCard
-          title="Altas, bajas y balance mensual"
-          description="Movimiento mensual de clientes para entender crecimiento y rotacion."
-          data={metrics}
-          series={[
-            { key: "clientesNuevos", color: "#16a34a", label: "Clientes nuevos" },
-            { key: "clientesBaja", color: "#dc2626", label: "Clientes baja" },
-            { key: "clientesNetos", color: "#2563eb", label: "Clientes netos" }
-          ]}
-          valueFormatter={formatNumber}
-          axisFormatter={formatCompactNumber}
-        />
-        <MetricChartCard
-          title="Facturacion total"
-          description="Desglose mensual entre asesoria, gestion, consultoria y total agregado."
-          data={metrics}
-          series={[
-            {
-              key: "facturacionTotal",
-              color: "#0f172a",
-              label: "Facturacion total",
-              valueFormatter: formatCurrency,
-              strokeWidth: 3.4
-            },
-            {
-              key: "facturacionAsesoriaEur",
-              color: "#0f766e",
-              label: "Asesoria",
-              valueFormatter: formatCurrency,
-              strokeWidth: 2.4
-            },
-            {
-              key: "facturacionGestionEur",
-              color: "#2563eb",
-              label: "Gestion",
-              valueFormatter: formatCurrency,
-              strokeWidth: 2.4
-            },
-            {
-              key: "facturacionConsultoriaEur",
-              color: "#7c3aed",
-              label: "Consultoria",
-              valueFormatter: formatCurrency,
-              strokeWidth: 2.4
-            }
-          ]}
-          valueFormatter={formatCurrency}
-          axisFormatter={formatCompactCurrency}
-        />
-        <MetricChartCard
-          title="Total declaraciones"
-          description="Desglose mensual entre IRPF, IVA, Sociedades, otras y el total agregado."
-          data={metrics}
-          series={[
-            {
-              key: "totalDeclaraciones",
-              color: "#0f172a",
-              label: "Total",
-              valueFormatter: formatNumber,
-              strokeWidth: 3.4
-            },
-            {
-              key: "declaracionesRenta",
-              color: "#16a34a",
-              label: "IRPF",
-              valueFormatter: formatNumber,
-              strokeWidth: 2.4
-            },
-            {
-              key: "declaracionesIva",
-              color: "#2563eb",
-              label: "IVA",
-              valueFormatter: formatNumber,
-              strokeWidth: 2.4
-            },
-            {
-              key: "declaracionesSociedades",
-              color: "#ea580c",
-              label: "Sociedades",
-              valueFormatter: formatNumber,
-              strokeWidth: 2.4
-            },
-            {
-              key: "declaracionesOtros",
-              color: "#7c3aed",
-              label: "Otras",
-              valueFormatter: formatNumber,
-              strokeWidth: 2.4
-            }
-          ]}
-          valueFormatter={formatNumber}
-          axisFormatter={formatCompactNumber}
-        />
-        <MetricChartCard
-          title="Tasa de resolucion"
-          description="Relacion entre consultas recibidas, consultas resueltas y tasa final de resolucion del mes."
-          data={metrics}
-          series={[
-            {
-              key: "consultasRecibidas",
-              color: "#dc2626",
-              label: "Consultas recibidas",
-              valueFormatter: formatNumber,
-              strokeWidth: 2.6
-            },
-            {
-              key: "consultasResueltas",
-              color: "#16a34a",
-              label: "Consultas resueltas",
-              valueFormatter: formatNumber,
-              strokeWidth: 2.6
-            },
-            {
-              key: "tasaResolucion",
-              color: "#ea580c",
-              label: "Tasa de resolucion",
-              yAxisId: "right",
-              valueFormatter: formatPercent,
-              strokeWidth: 3.2
-            }
-          ]}
-          valueFormatter={formatPercent}
-          axisFormatter={formatCompactNumber}
-          rightAxisFormatter={formatPercent}
-        />
-      </SimpleGrid>
+      <Tabs defaultValue="metrics" className={classes.tabsSection}>
+        <Tabs.List>
+          <Tabs.Tab value="metrics">Metricas</Tabs.Tab>
+          <Tabs.Tab value="support">Soporte asistido</Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="metrics">
+          <SimpleGrid cols={{ base: 1, xl: 2 }} className={classes.section}>
+            <MetricChartCard
+              title="Clientes activos"
+              description="Evolucion mensual de los clientes activos gestionados por esta asesoria."
+              data={metrics}
+              dataKey="clientesActivos"
+              color="#0f766e"
+              valueFormatter={formatNumber}
+              axisFormatter={formatCompactNumber}
+            />
+            <MetricChartCard
+              title="Altas, bajas y balance mensual"
+              description="Movimiento mensual de clientes para entender crecimiento y rotacion."
+              data={metrics}
+              series={[
+                { key: "clientesNuevos", color: "#16a34a", label: "Clientes nuevos" },
+                { key: "clientesBaja", color: "#dc2626", label: "Clientes baja" },
+                { key: "clientesNetos", color: "#2563eb", label: "Clientes netos" }
+              ]}
+              valueFormatter={formatNumber}
+              axisFormatter={formatCompactNumber}
+            />
+            <MetricChartCard
+              title="Facturacion total"
+              description="Desglose mensual entre asesoria, gestion, consultoria y total agregado."
+              data={metrics}
+              series={[
+                {
+                  key: "facturacionTotal",
+                  color: "#0f172a",
+                  label: "Facturacion total",
+                  valueFormatter: formatCurrency,
+                  strokeWidth: 3.4
+                },
+                {
+                  key: "facturacionAsesoriaEur",
+                  color: "#0f766e",
+                  label: "Asesoria",
+                  valueFormatter: formatCurrency,
+                  strokeWidth: 2.4
+                },
+                {
+                  key: "facturacionGestionEur",
+                  color: "#2563eb",
+                  label: "Gestion",
+                  valueFormatter: formatCurrency,
+                  strokeWidth: 2.4
+                },
+                {
+                  key: "facturacionConsultoriaEur",
+                  color: "#7c3aed",
+                  label: "Consultoria",
+                  valueFormatter: formatCurrency,
+                  strokeWidth: 2.4
+                }
+              ]}
+              valueFormatter={formatCurrency}
+              axisFormatter={formatCompactCurrency}
+            />
+            <MetricChartCard
+              title="Total declaraciones"
+              description="Desglose mensual entre IRPF, IVA, Sociedades, otras y el total agregado."
+              data={metrics}
+              series={[
+                {
+                  key: "totalDeclaraciones",
+                  color: "#0f172a",
+                  label: "Total",
+                  valueFormatter: formatNumber,
+                  strokeWidth: 3.4
+                },
+                {
+                  key: "declaracionesRenta",
+                  color: "#16a34a",
+                  label: "IRPF",
+                  valueFormatter: formatNumber,
+                  strokeWidth: 2.4
+                },
+                {
+                  key: "declaracionesIva",
+                  color: "#2563eb",
+                  label: "IVA",
+                  valueFormatter: formatNumber,
+                  strokeWidth: 2.4
+                },
+                {
+                  key: "declaracionesSociedades",
+                  color: "#ea580c",
+                  label: "Sociedades",
+                  valueFormatter: formatNumber,
+                  strokeWidth: 2.4
+                },
+                {
+                  key: "declaracionesOtros",
+                  color: "#7c3aed",
+                  label: "Otras",
+                  valueFormatter: formatNumber,
+                  strokeWidth: 2.4
+                }
+              ]}
+              valueFormatter={formatNumber}
+              axisFormatter={formatCompactNumber}
+            />
+            <MetricChartCard
+              title="Tasa de resolucion"
+              description="Relacion entre consultas recibidas, consultas resueltas y tasa final de resolucion del mes."
+              data={metrics}
+              series={[
+                {
+                  key: "consultasRecibidas",
+                  color: "#dc2626",
+                  label: "Consultas recibidas",
+                  valueFormatter: formatNumber,
+                  strokeWidth: 2.6
+                },
+                {
+                  key: "consultasResueltas",
+                  color: "#16a34a",
+                  label: "Consultas resueltas",
+                  valueFormatter: formatNumber,
+                  strokeWidth: 2.6
+                },
+                {
+                  key: "tasaResolucion",
+                  color: "#ea580c",
+                  label: "Tasa de resolucion",
+                  yAxisId: "right",
+                  valueFormatter: formatPercent,
+                  strokeWidth: 3.2
+                }
+              ]}
+              valueFormatter={formatPercent}
+              axisFormatter={formatCompactNumber}
+              rightAxisFormatter={formatPercent}
+            />
+          </SimpleGrid>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="support">
+          <SupportAssistedPanel asesoriaId={id} />
+        </Tabs.Panel>
+      </Tabs>
     </>
   );
 }

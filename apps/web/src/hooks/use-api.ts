@@ -1,15 +1,17 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 
 import {
+  askSupportQuestion,
   getAsesoriaDetail,
   getAsesoriaFilters,
   getAsesoriaMetrics,
   getAsesoriaSummary,
   getAsesorias,
   getNetworkMetrics,
-  getNetworkSummary
+  getNetworkSummary,
+  getSupportDocuments
 } from "../api/endpoints";
-import type { AsesoriaFilters, SummaryMonthParams } from "../types/api";
+import type { AsesoriaFilters, SupportDocumentsFilters, SupportQuestionInput, SummaryMonthParams } from "../types/api";
 
 export const useNetworkMetrics = () =>
   useQuery({
@@ -62,4 +64,21 @@ export const useAsesoriaSummary = (
     queryFn: () => getAsesoriaSummary(id, params),
     enabled,
     placeholderData: keepPreviousData
+  });
+
+export const useSupportDocuments = (
+  id: number,
+  filters?: SupportDocumentsFilters,
+  enabled = true
+) =>
+  useQuery({
+    queryKey: ["support-documents", id, filters],
+    queryFn: () => getSupportDocuments(id, filters),
+    enabled,
+    placeholderData: keepPreviousData
+  });
+
+export const useAskSupportQuestion = (id: number) =>
+  useMutation({
+    mutationFn: (body: SupportQuestionInput) => askSupportQuestion(id, body)
   });

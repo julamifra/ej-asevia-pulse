@@ -112,3 +112,48 @@ export type AsesoriaFilters = {
   page?: number;
   limit?: number;
 };
+
+export type SupportDocumentItem = {
+  docId: string;
+  fecha: string;
+  tipo: string;
+  categoria: string;
+  prioridad: string;
+  estado: string;
+  titulo: string;
+  snippet: string;
+  tags: string[];
+};
+
+export type SupportDocumentsResponse = {
+  items: SupportDocumentItem[];
+  pagination: Pagination;
+};
+
+export type SupportDocumentsFilters = {
+  q?: string;
+  tipo?: string;
+  categoria?: string;
+  estado?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type SupportSource = {
+  docId: string;
+  tipo: string;
+  fecha: string;
+  categoria: string;
+  titulo: string;
+  snippet: string;
+};
+
+export type SupportAnswerResponse = {
+  answer: string;
+  confidence: number;
+  sources: SupportSource[];
+};
+
+export type SupportQuestionInput = {
+  question: string;
+};

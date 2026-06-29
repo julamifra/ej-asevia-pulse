@@ -56,3 +56,23 @@ export const fetchJson = async <T>(
 
   return (await response.json()) as T;
 };
+
+export const postJson = async <TResponse, TBody>(path: string, body: TBody) => {
+  const response = await fetch(buildApiUrl(path), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as ApiErrorPayload | null;
+    throw new ApiError(
+      payload?.error?.message ?? "No se pudo completar la peticion.",
+      response.status
+    );
+  }
+
+  return (await response.json()) as TResponse;
+};

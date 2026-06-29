@@ -1,4 +1,4 @@
-import { fetchJson } from "./client";
+import { fetchJson, postJson } from "./client";
 import type {
   AsesoriaDetail,
   AsesoriaFilters,
@@ -8,6 +8,10 @@ import type {
   AsesoriaSummaryResponse,
   NetworkMetricsResponse,
   NetworkSummaryResponse,
+  SupportAnswerResponse,
+  SupportDocumentsFilters,
+  SupportDocumentsResponse,
+  SupportQuestionInput,
   SummaryMonthParams
 } from "../types/api";
 
@@ -29,3 +33,9 @@ export const getAsesoriaMetrics = (id: number) =>
 
 export const getAsesoriaSummary = (id: number, params?: SummaryMonthParams) =>
   fetchJson<AsesoriaSummaryResponse>(`/asesorias/${id}/summary`, params);
+
+export const getSupportDocuments = (id: number, params?: SupportDocumentsFilters) =>
+  fetchJson<SupportDocumentsResponse>(`/asesorias/${id}/support-documents`, params);
+
+export const askSupportQuestion = (id: number, body: SupportQuestionInput) =>
+  postJson<SupportAnswerResponse, SupportQuestionInput>(`/asesorias/${id}/support/ask`, body);

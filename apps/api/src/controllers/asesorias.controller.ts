@@ -1,17 +1,20 @@
 import type { Request, Response } from "express";
 
 import {
+  ensureAsesoria,
   getAsesoriaDetail,
   getAsesoriaFilters,
   getAsesoriaMetrics,
   getAsesoriaSummary,
   listAsesorias
 } from "../services/asesorias.service";
+import { askSupportQuestion, listSupportDocuments } from "../services/support.service";
 import {
   parseIdParam,
   parseLimitParam,
   parseOptionalStringParam,
   parsePageParam,
+  parseRequiredStringBody,
   parseSummaryMonthQuery
 } from "../utils/validation";
 
@@ -45,5 +48,32 @@ export const getAsesoriaSummaryController = async (req: Request, res: Response) 
       parseIdParam(req.params.id),
       parseSummaryMonthQuery(req.query.year, req.query.month)
     )
+  );
+};
+
+export const getSupportDocumentsController = async (req: Request, res: Response) => {
+  const asesoriaId = parseIdParam(req.params.id);
+  await ensureAsesoria(asesoriaId);
+
+  res.json(
+    await listSupportDocuments(asesoriaId, {
+      q: parseOptionalStringParam(req.query.q),
+      tipo: parseOptionalStringParam(req.query.tipo),
+      categoria: parseOptionalStringParam(req.query.categoria),
+      estado: parseOptionalStringParam(req.query.estado),
+      page: parsePageParam(req.query.page),
+      limit: parseLimitParam(req.query.limit)
+    })
+  );
+};
+
+export const askSupportQuestionController = async (req: Request, res: Response) => {
+  const asesoriaId = parseIdParam(req.params.id);
+  await ensureAsesoria(asesoriaId);
+
+  res.json(
+    await askSupportQuestion(asesoriaId, {
+      question: parseRequiredStringBody(req.body?.question, "question")
+    })
   );
 };

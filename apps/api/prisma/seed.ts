@@ -15,6 +15,18 @@ const prisma = new PrismaClient();
 const workspaceRoot = path.resolve(import.meta.dirname, "../../..");
 
 type CsvRow = Record<string, string>;
+type SupportSeedRow = {
+  doc_id: string;
+  asesoria_id: number;
+  fecha: string;
+  tipo: string;
+  categoria: string;
+  prioridad: string;
+  estado: string;
+  titulo: string;
+  texto: string;
+  tags: string[];
+};
 
 const resolveRequiredPath = async (relativePath: string) => {
   const absolutePath = path.resolve(workspaceRoot, relativePath);
@@ -42,6 +54,15 @@ const parseCsv = async (filePath: string) => {
         return row;
       }, {});
     });
+};
+
+const parseJsonLines = async <T>(filePath: string) => {
+  const content = await readFile(filePath, "utf8");
+
+  return content
+    .split(/\r?\n/)
+    .filter((line) => line.trim().length > 0)
+    .map<T>((line) => JSON.parse(line) as T);
 };
 
 const toMonthDate = (value: string) => new Date(`${value}-01T00:00:00.000Z`);
@@ -135,9 +156,44 @@ const seedMetricas = async () => {
   }
 };
 
+const seedSupportDocuments = async () => {
+  const supportPath = await resolveRequiredPath("data/soporte_seed.jsonl");
+  const rows = await parseJsonLines<SupportSeedRow>(supportPath);
+
+  for (const row of rows) {
+    await prisma.supportDocument.upsert({
+      where: { docId: row.doc_id },
+      update: {
+        asesoriaId: row.asesoria_id,
+        fecha: toDate(row.fecha),
+        tipo: row.tipo,
+        categoria: row.categoria,
+        prioridad: row.prioridad,
+        estado: row.estado,
+        titulo: row.titulo,
+        texto: row.texto,
+        tags: row.tags
+      },
+      create: {
+        docId: row.doc_id,
+        asesoriaId: row.asesoria_id,
+        fecha: toDate(row.fecha),
+        tipo: row.tipo,
+        categoria: row.categoria,
+        prioridad: row.prioridad,
+        estado: row.estado,
+        titulo: row.titulo,
+        texto: row.texto,
+        tags: row.tags
+      }
+    });
+  }
+};
+
 const main = async () => {
   await seedAsesorias();
   await seedMetricas();
+  await seedSupportDocuments();
 };
 
 main()

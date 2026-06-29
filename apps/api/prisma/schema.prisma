@@ -8,15 +8,16 @@ datasource db {
 }
 
 model Asesoria {
-  id            Int              @id
-  nombre        String
-  cif           String           @unique
-  provincia     String
-  ciudad        String
-  fechaAlta     DateTime         @map("fecha_alta") @db.Date
-  numEmpleados  Int              @map("num_empleados")
-  especialidad  String
-  metricas      MetricaMensual[]
+  id               Int               @id
+  nombre           String
+  cif              String            @unique
+  provincia        String
+  ciudad           String
+  fechaAlta        DateTime          @map("fecha_alta") @db.Date
+  numEmpleados     Int               @map("num_empleados")
+  especialidad     String
+  metricas         MetricaMensual[]
+  supportDocuments SupportDocument[]
 
   @@map("asesorias")
 }
@@ -44,4 +45,23 @@ model MetricaMensual {
 
   @@id([asesoriaId, mes])
   @@map("metricas_mensuales")
+}
+
+model SupportDocument {
+  docId       String   @id @map("doc_id")
+  asesoriaId  Int      @map("asesoria_id")
+  fecha       DateTime @db.Date
+  tipo        String
+  categoria   String
+  prioridad   String
+  estado      String
+  titulo      String
+  texto       String
+  tags        String[]
+  asesoria    Asesoria @relation(fields: [asesoriaId], references: [id], onDelete: Cascade)
+
+  @@index([asesoriaId, fecha])
+  @@index([asesoriaId, categoria])
+  @@index([asesoriaId, tipo])
+  @@map("support_documents")
 }

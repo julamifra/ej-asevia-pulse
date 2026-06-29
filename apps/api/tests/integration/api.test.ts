@@ -8,6 +8,10 @@ const prismaMock = {
   },
   metricaMensual: {
     findMany: jest.fn()
+  },
+  supportDocument: {
+    findMany: jest.fn(),
+    count: jest.fn()
   }
 };
 
@@ -265,6 +269,92 @@ describe("API REST", () => {
         message: "Metrics not found for selected month"
       }
     });
+  });
+
+  it("lists support documents for one asesoria without mixing other asesorias", async () => {
+    prismaMock.asesoria.findUnique.mockResolvedValue({ id: 1 });
+    prismaMock.supportDocument.findMany.mockResolvedValue([
+      {
+        docId: "SUP-1",
+        asesoriaId: 1,
+        fecha: new Date("2025-10-23T00:00:00.000Z"),
+        tipo: "chat",
+        categoria: "Onboarding",
+        prioridad: "media",
+        estado: "resuelto",
+        titulo: "Traspaso",
+        texto: "Se recopilan ultimas declaraciones y modelos pendientes.",
+        tags: ["onboarding"]
+      }
+    ]);
+    prismaMock.supportDocument.count.mockResolvedValue(1);
+
+    const response = await request(createApp()).get("/api/asesorias/1/support-documents?limit=10&page=1");
+
+    expect(prismaMock.supportDocument.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ asesoriaId: 1 })
+      })
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      items: [
+        {
+          docId: "SUP-1",
+          fecha: "2025-10-23",
+          tipo: "chat",
+          categoria: "Onboarding",
+          prioridad: "media",
+          estado: "resuelto",
+          titulo: "Traspaso",
+          snippet: "Se recopilan ultimas declaraciones y modelos pendientes.",
+          tags: ["onboarding"]
+        }
+      ],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 1,
+        totalPages: 1
+      }
+    });
+  });
+
+  it("answers support questions using only documents from the requested asesoria", async () => {
+    prismaMock.asesoria.findUnique.mockResolvedValue({ id: 1 });
+    prismaMock.supportDocument.findMany.mockResolvedValue([
+      {
+        docId: "SUP-1",
+        asesoriaId: 1,
+        fecha: new Date("2025-10-23T00:00:00.000Z"),
+        tipo: "chat",
+        categoria: "Onboarding",
+        prioridad: "media",
+        estado: "resuelto",
+        titulo: "Traspaso desde otra gestoria",
+        texto: "Se recopilan ultimas declaraciones, modelos pendientes y usuarios en AEAT.",
+        tags: ["onboarding", "aeat"]
+      }
+    ]);
+
+    const response = await request(createApp())
+      .post("/api/asesorias/1/support/ask")
+      .send({ question: "Que se revisa en un traspaso desde otra gestoria?" });
+
+    expect(prismaMock.supportDocument.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { asesoriaId: 1 }
+      })
+    );
+    expect(response.status).toBe(200);
+    expect(response.body.sources).toHaveLength(1);
+    expect(response.body.sources[0]).toMatchObject({
+      docId: "SUP-1",
+      tipo: "chat",
+      categoria: "Onboarding",
+      titulo: "Traspaso desde otra gestoria"
+    });
+    expect(response.body.answer).toContain("Se recopilan ultimas declaraciones");
   });
 
   it("returns aggregated network summary", async () => {

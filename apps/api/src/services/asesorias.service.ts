@@ -1,42 +1,8 @@
 import { prisma } from "../db/prisma";
 import { AppError } from "../errors/app-error";
 import { buildSummary, mapMetricToDto } from "../lib/metrics";
+import { AsesoriaListRow, AsesoriaWhere, EspecialidadRow, ListParams, ProvinciaRow, SummaryMonthParams } from "../types/asesoria";
 
-type ListParams = {
-  search?: string;
-  provincia?: string;
-  especialidad?: string;
-  page: number;
-  limit: number;
-};
-
-type SummaryMonthParams = {
-  year: number;
-  month: number;
-  selectedMonth: string;
-};
-
-type AsesoriaWhere = {
-  OR?: Array<
-    | { nombre: { contains: string; mode: "insensitive" } }
-    | { ciudad: { contains: string; mode: "insensitive" } }
-    | { cif: { contains: string; mode: "insensitive" } }
-  >;
-  provincia?: string;
-  especialidad?: string;
-};
-
-type ProvinciaRow = { provincia: string };
-type EspecialidadRow = { especialidad: string };
-type AsesoriaListRow = {
-  id: number;
-  nombre: string;
-  provincia: string;
-  ciudad: string;
-  numEmpleados: number;
-  especialidad: string;
-  fechaAlta: Date;
-};
 
 const buildWhere = ({ search, provincia, especialidad }: Omit<ListParams, "page" | "limit">): AsesoriaWhere => {
   const where: AsesoriaWhere = {};
@@ -170,3 +136,5 @@ export const getAsesoriaSummary = async (id: number, selectedMonth?: SummaryMont
     })
   };
 };
+
+export const ensureAsesoria = ensureAsesoriaExists;

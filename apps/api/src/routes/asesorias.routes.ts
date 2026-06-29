@@ -1,9 +1,11 @@
 import { Router } from "express";
 
 import {
+  askSupportQuestionController,
   getAsesoriaDetailController,
   getAsesoriaFiltersController,
   getAsesoriaMetricsController,
+  getSupportDocumentsController,
   getAsesoriaSummaryController,
   listAsesoriasController
 } from "../controllers/asesorias.controller";
@@ -16,3 +18,5 @@ asesoriasRouter.get("/asesorias/filters", asyncHandler(getAsesoriaFiltersControl
 asesoriasRouter.get("/asesorias/:id", asyncHandler(getAsesoriaDetailController));
 asesoriasRouter.get("/asesorias/:id/metrics", asyncHandler(getAsesoriaMetricsController));
 asesoriasRouter.get("/asesorias/:id/summary", asyncHandler(getAsesoriaSummaryController));
+asesoriasRouter.get("/asesorias/:id/support-documents", asyncHandler(getSupportDocumentsController));
+asesoriasRouter.post("/asesorias/:id/support/ask", asyncHandler(askSupportQuestionController));

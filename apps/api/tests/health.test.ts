@@ -8,6 +8,10 @@ const prismaMock = {
   },
   metricaMensual: {
     findMany: jest.fn()
+  },
+  supportDocument: {
+    findMany: jest.fn(),
+    count: jest.fn()
   }
 };
 

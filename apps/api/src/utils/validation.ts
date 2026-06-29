@@ -59,6 +59,16 @@ export const parseLimitParam = (value: unknown, defaultValue = 10, max = 100) =>
 
 export const parseOptionalStringParam = (value: unknown) => toTrimmedString(value);
 
+export const parseRequiredStringBody = (value: unknown, name: string) => {
+  const raw = toTrimmedString(value);
+
+  if (!raw) {
+    throw new AppError(400, "BAD_REQUEST", `Invalid ${name} field`);
+  }
+
+  return raw;
+};
+
 const parseRequiredIntegerQuery = (value: unknown, name: string) => {
   const raw = toTrimmedString(value);
 

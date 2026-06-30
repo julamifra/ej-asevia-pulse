@@ -148,7 +148,9 @@ Una segunda implementacion natural podria mejorar el soporte asistido sin salir 
 - resumir recurrencias agrupando incidencias por categoria o titulo, en lugar de responder solo con documentos individuales
 - devolver respuestas mas especializadas segun el tipo de pregunta, manteniendo siempre las fuentes
 
-## Metricas elegidas y por que
+## Decisiones técnicas (Preguntas)
+## Fase 1
+### Metricas elegidas y por que
 
 - `clientesActivos`: tamano real de cartera en cada mes.
 - `clientesNuevos`, `clientesBaja`, `clientesNetos`: crecimiento y rotacion.
@@ -158,7 +160,7 @@ Una segunda implementacion natural podria mejorar el soporte asistido sin salir 
 - `consultasRecibidas`, `consultasResueltas`, `tasaResolucion`: capacidad operativa y nivel de respuesta.
 - `satisfaccionCliente`: senal simple de calidad percibida.
 
-## Que deje fuera por falta de tiempo
+### ¿Qué dejaste fuera por falta de tiempo?
 
 - Una capa mas solida de manejo de errores end-to-end, con respuestas mas homogeneas entre API y frontend.
 - Validacion de entrada mas estructurada y reutilizable en los endpoints.
@@ -167,23 +169,46 @@ Una segunda implementacion natural podria mejorar el soporte asistido sin salir 
 - Logging y observabilidad mas robustos.
 - En Fase 2, faltaria evolucionar el ranking textual con una estrategia mas robusta si creciera el volumen documental.
 
-## Parte mas fragil o menos eficiente
+### ¿Qué parte de tu implementación es la más frágil o la menos eficiente?
 
 La parte mas fragil esta en el acceso a metricas historicas.
 
-- Algunas vistas cargan series completas para construir graficas y resumenes.
-- El modelo actual prioriza simplicidad y claridad frente a escalabilidad.
-- Si el producto creciera, revisaria el modelo de metricas y tambien los endpoints para responder mejor a lo que consume el frontend, no solo a recursos REST genericos.
+- Algunas vistas cargan series completas para construir graficas y resumenes. El modelo actual prioriza simplicidad y claridad frente a escalabilidad.
+- Si el producto creciera, revisaría el modelo de metricas y tambien los endpoints para responder mejor a lo que consume el frontend, no solo a recursos REST genericos.
 - En soporte asistido, la parte mas fragil es el ranking textual: es facil de defender y barato, pero menos preciso que una solucion con indexacion avanzada o retrieval semantico.
 
-## Que cambiaria con 5.000 asesorias
+### ¿Qué cambiarías si en vez de 50 asesorías fueran 5.000?
 
 - Acotaria el rango temporal por defecto en detalle y red, por ejemplo a ultimos 12 o 24 meses.
 - Evitaria cargar historicos completos cuando no son necesarios.
 - Revisaria indices sobre campos de consulta frecuentes, especialmente por asesoria y mes.
 - Añadiria preagregados o vistas materializadas para KPIs globales y vista de red.
-- Ajustaria la API para devolver payloads mas orientados a cada pantalla.
+- Ajustaria la API para devolver payloads mas orientados a cada pantalla, no como una API REST genérica.
 - Para soporte asistido, pasaria de un escaneo textual simple a una indexacion mas especializada por asesoria, categoria, fecha y terminos normalizados.
+
+## Fase 2
+### ¿Cómo garantizas el aislamiento entre asesorías? ¿Qué pasaría si una asesoría tiene 10.000 documentos?
+ - El aislamiento se garantiza porque la consulta de soporte parte siempre de la ficha de una asesoría y filtra primero siempre por ese identificador (asesoriaId) antes de buscar o rankear documentos (tanto en el endpoint de listar como el de preguntar).
+ - Si tuviera más de 10.000 documentos, perdería eficiencia. Habría que:
+    - limitar por defecto rango temporal
+    - reforzar índices asesoriaId, fecha, categoria, tipo
+    - prefiltrar antes de hacer el ranking
+
+### ¿Cómo gestionas la trazabilidad de las respuestas? ¿Qué pasa si un documento desoporte se actualiza o se elimina?
+ - La trazabilidad se resuelve devolviendo siempre fuentes explicitas en la respuesta.
+ - Cada respuesta incluye: docId, tipo, fecha, categoría, titulo y snippet.
+ - Lo que permite ver exáctamente qué documentos respaldan la contestación.
+ - Si se actualiza, las siguientes consultas ya trabajarían sobre la versión nueva, ya que la respuesta se construye en tiempo real contra la BD.
+ - Si se elimina, ese documento dejaría de incluirse como fuente en las consultas.
+
+### ¿Qué coste y complejidad tiene tu solución? ¿Qué dependencias externas introduces ycómo afectan al despliegue?
+ - El coste es bajo, porque no uso LLM externo, embeddings ni base vectorial.
+ - Complejidad es moderada:
+    - persistencia normal en PostgreSQL
+    - busqueda textual simple
+    - ranking heurístico (no con IA ni con modelo)
+ - Es una solucion fácil de explicar, barata y simple.
+ - Actualmente no hay dependencias externas. Todo sigue corriendo con el stack ya existente.
 
 ## Notas finales
 
